@@ -1,0 +1,10 @@
+<h2>Search Directors</h2>
+<form action="/directors" method="GET">
+    <label>Name</label>
+    <input type="text" name="name" value="<%= searchOptions.name %>">
+    <button type="submit">Search</button>
+</form>
+<br>
+<% directors.forEach(director => { %>
+    <div><%= director.name %></div>
+<% }) %>
