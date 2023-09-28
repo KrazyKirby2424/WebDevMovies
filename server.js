@@ -13,6 +13,7 @@ const bodyParser = require('body-parser')
 
 const indexRouter = require('./routes/index')
 const directorRouter = require('./routes/directors')
+const movieRouter = require('./routes/movies')
 
 app.set('view engine', 'ejs')
 app.set('views', __dirname + '/views')
@@ -30,6 +31,7 @@ db.once('open', error => console.log('Connected to Mongoose'))
 
 app.use('/', indexRouter)
 app.use('/directors', directorRouter)
+app.use('/movies', movieRouter)
 
 
 app.listen(process.env.PORT || 3000)
