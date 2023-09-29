@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const Director = require('../models/director')
+const Movie = require('../models/movie')
 
 //All Directors Route
 router.get('/', async (req, res) => {
@@ -34,8 +35,7 @@ router.post('/', async (req, res) => {
 
     try{
         const newDirector = await director.save()
-        //res.redirect(`directors/${newDirector.id}`)
-        res.redirect(`directors`) 
+        res.redirect(`directors/${newDirector.id}`) 
     }
     catch {
         res.render('directors/new', 
@@ -43,6 +43,88 @@ router.post('/', async (req, res) => {
             director: director,
             errorMessage: 'Error creating Director'
         })
+    }
+})
+
+router.get('/:id', async (req, res) => {
+    try {
+        const director = await Director.findById(req.params.id)
+        const movies = await Movie.find({ director: director.id }).limit(6).exec()
+        res.render('directors/show', {
+            director: director,
+            moviesByDirector: movies
+        })
+    } catch {
+        res.redirect('/')
+    }
+})
+
+router.get('/:id/edit', async (req,res) => {
+    try {
+        const director = await Director.findById(req.params.id)
+        res.render('directors/edit', { director: director })
+    } catch {
+        res.redirect('/directors')
+    }
+})
+
+router.put('/:id', async (req,res) => {
+    let director
+    try{
+        director = await Director.findById(req.params.id)
+        director.name = req.body.name
+        await director.save()
+        res.redirect(`/directors/${director.id}`) 
+    }
+    catch {
+        if(director == null)
+        {
+            res.redirect('/')
+        }
+        else {
+            res.render('directors/edit', 
+            {
+                director: director,
+                errorMessage: 'Error updating Director'
+            })
+        }
+    }
+})
+
+//need to figure out why the pre check is failing for delete
+router.delete('/:id', async (req,res) => {
+    let director
+    try{
+        director = await Director.findById(req.params.id)
+        //console.log(director)
+        //await director.deleteOne()
+        const response = await Director.deleteOne({_id: req.params.id})
+        res.redirect(`/directors`)
+        console.log("Deleted from routes") 
+    }
+    catch {
+        if(director == null)
+        {
+            //console.log("dir " + director)
+            res.redirect('/')
+        }
+        else {
+            //console.log("dir " + director)
+          /*  
+            res.render('directors/show', 
+            {
+                director: director,
+                errorMessage: 'Error deleting Director, still has movies'
+            })
+            */
+            const movies = await Movie.find({ director: director.id }).limit(6).exec()
+            res.render('directors/show', {
+                director: director,
+                moviesByDirector: movies,
+                errorMessage: 'Error deleting Director, still has movies'
+            })
+            //res.redirect(`/directors/${director.id}`)
+        }
     }
 })
 
