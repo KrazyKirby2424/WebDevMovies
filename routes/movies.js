@@ -49,14 +49,95 @@ router.post('/', async (req, res) => {
 
     try {
         const newMovie = await movie.save()
-        //res.redirect(`movies/${newMovie.id}`)
-        res.redirect(`movies`)
+        res.redirect(`movies/${newMovie.id}`)
+        //res.redirect(`movies`)
     } catch {
         renderNewPage(res, movie, true)
     }
 })
 
+//Show Movie Route
+router.get('/:id', async (req, res) => {
+    try {
+        const movie = await Movie.findById(req.params.id).populate('director').exec()
+
+        res.render('movies/show', {movie: movie})
+    } catch {
+
+    }
+})
+
+//Edit Movie Route
+router.get('/:id/edit', async (req, res) => {
+    try {
+        const movie = await Movie.findById(req.params.id)
+        renderEditPage(res, movie)
+    } catch {
+        res.redirect('/')
+    }
+})
+
+//Update Movie Route
+router.put('/:id', async (req, res) => {
+    let movie
+
+    try {
+        movie = await Movie.findById(req.params.id)
+        movie.title = req.body.title
+        movie.director = req.body.director
+        movie.releaseDate = new Date(req.body.releaseDate)
+        movie.movieLength = req.body.movieLength
+        movie.description = req.body.description
+        if(req.body.cover != null && req.body.cover !== '')
+        {
+            saveCover(movie, req.body.cover)
+        }
+        await movie.save()
+        res.redirect(`/movies/${movie.id}`)
+        //res.redirect(`movies`)
+    } catch (err) {
+        console.log(err)
+        if(movie != null) {
+            renderEditPage(res, movie, true)
+        }
+        else {
+            redirect('/')
+        }
+    }
+})
+
+//Delete Movie
+router.delete('/:id', async (req, res) => {
+    let movie
+    try {
+        movie = await Movie.findById(req.params.id)
+        const response = await Movie.deleteOne({_id: req.params.id})
+        res.redirect('/movies')
+    } catch(err) {
+        console.log(err)
+        if(movie != null)
+        {
+            res.render('movies/show', {
+                movie: movie,
+                errorMessage: 'Could not remove movie'
+            })
+        } else {
+            res.redirect('/')
+        }
+    }
+})
+
 async function renderNewPage(res, movie, hasError = false)
+{
+    renderFormPage(res, movie, 'new', hasError)
+}
+
+async function renderEditPage(res, movie, hasError = false)
+{
+    renderFormPage(res, movie, 'edit', hasError)
+}
+
+async function renderFormPage(res, movie, form, hasError = false)
 {
     try {
         const directors = await Director.find({})
@@ -64,8 +145,14 @@ async function renderNewPage(res, movie, hasError = false)
             directors: directors,
             movie: movie
         }
-        if (hasError) params.errorMessage = 'Error Creating Movie'
-        res.render('movies/new', params)
+        if (hasError) {
+            if (form === 'edit') {
+                params.errorMessage = 'Error Updating Movie'
+            } else {
+                params.errorMessage = 'Error Creating Movie'
+            }
+        }
+        res.render(`movies/${form}`, params)
     } catch {
         res.redirect('/movies')
     }
