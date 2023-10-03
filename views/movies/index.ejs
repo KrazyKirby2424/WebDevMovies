@@ -20,10 +20,6 @@
         <button class="btn btn-primary" type="submit">Search</button>
     </div>
 </form>
-<div>
-    <% movies.forEach(movie => { %>
-        <a href="/movies/<%= movie.id%>">
-            <img height="150" width="100" src="<%= movie.coverImagePath %>">
-        </a>
-    <% }) %>
-</div>
+<br>
+<%-include('../partials/movieGrid', {movies: movies, large: true})%>
+

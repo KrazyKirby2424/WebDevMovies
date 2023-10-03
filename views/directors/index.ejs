@@ -12,10 +12,12 @@
 </form>
 <br>
 <% directors.forEach(director => { %>
-    <div><%= director.name %></div>
-    <div class="btn-row">
-        <a class="btn btn-primary" href="/directors/<%= director.id %>">View</a>
-        <a class="btn btn-primary" href="/directors/<%= director.id %>/edit">Edit</a>
-        <%- include('../partials/deleteForm', {url: `/directors/${director.id}`}) %>
+    <div class="director-row">
+        <div class="director-name"><%= director.name %></div>
+        <div class="btn-row">
+            <a class="btn btn-primary" href="/directors/<%= director.id %>">View</a>
+            <a class="btn btn-primary" href="/directors/<%= director.id %>/edit">Edit</a>
+            <%- include('../partials/deleteForm', {url: `/directors/${director.id}`}) %>
+        </div>
     </div>
 <% }) %>
